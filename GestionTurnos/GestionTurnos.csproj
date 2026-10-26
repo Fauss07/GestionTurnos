@@ -45,9 +45,13 @@
   <ItemGroup>
     <Compile Include="Enum\Especialidad.cs" />
     <Compile Include="Enum\EstadoTurno.cs" />
+    <Compile Include="Interfaz\ICobertura.cs" />
+    <Compile Include="Modelos\ObraSocial.cs" />
     <Compile Include="Modelos\Paciente.cs" />
+    <Compile Include="Modelos\Particular.cs" />
     <Compile Include="Modelos\Persona.cs" />
     <Compile Include="Modelos\Profesional.cs" />
+    <Compile Include="Modelos\SistemaClinica.cs" />
     <Compile Include="Modelos\Turnos.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

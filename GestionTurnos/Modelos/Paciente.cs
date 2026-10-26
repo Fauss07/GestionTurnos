@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GestionTurnos.Interfaz;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace GestionTurnos.Modelos
         public int Telefono { get; set; }
         public string TipoCobertura { get; set; }
         public string mail { get; set; }
-        public List<Paciente> Pacientes { get; set; } 
+        public ICobertura Cobertura { get; set; }
 
 
         public Paciente(int dni,string nom,string ape,DateTime fecnac, int tel,string tipcob) : base (nom,ape)
@@ -23,41 +24,15 @@ namespace GestionTurnos.Modelos
             this.FechaNacimiento = fecnac;
             this.Telefono = tel;
             this.TipoCobertura = tipcob;
-            Pacientes = new List<Paciente>();
-        }   
-
-        public void RegistrarPaciente(Paciente p)
-        {
-            do
+            if (TipoCobertura == "Particular")
             {
-                Console.WriteLine("Ingrese DNI del paciente");
-                valido = int.TryParse(Console.ReadLine(), out int d);
-                DNI = d;
-                if(!valido)
-                {
-                    Console.WriteLine("Ingrese un DNI válido.");
-                }
-                else if (Pacientes.Any(a => a.DNI == DNI))
-                {
-                    Console.WriteLine("No se puede registrar dos pacientes con el mismo DNI.");
-                    valido = false;
-                }
-
-            }while (!valido);
-
-           Pacientes.Add(p); 
-        }
-
-        public void Listarpaciente()
-        {
-            Console.WriteLine("DNI\t\tNombre\t\tEdad");
-            Console.WriteLine("------------------------------------------");
-
-            foreach (Paciente paciente in Pacientes)
-            {
-                Console.WriteLine($"{paciente.DNI}\t\t{paciente.Nombre}\t\t{paciente.Telefono}\t\t{paciente.TipoCobertura}\t\t{paciente.CalcularEdad()}");
+                Cobertura = new Particular();
             }
-        }
+            else if (TipoCobertura == "Obra social")
+            {
+                Cobertura = new ObraSocial();
+            }
+        }   
         public int CalcularEdad()
         {
 
