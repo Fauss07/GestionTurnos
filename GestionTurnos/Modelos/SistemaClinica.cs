@@ -8,8 +8,8 @@ namespace GestionTurnos.Modelos
 {
     internal class SistemaClinica
     {
-        public List <Paciente> Pacientes { get; set; }
-        
+        public List <Paciente> Pacientes { get; set; } = new List<Paciente>();
+
         public void RegistrarPaciente(Paciente paciente)
         {
             if (paciente == null)
@@ -38,7 +38,7 @@ namespace GestionTurnos.Modelos
             while (true)
             {
                 Console.WriteLine("Ingrese la fecha de nacimiento (dd/MM/yyyy):");
-               
+
 
                 if (DateTime.TryParse(Console.ReadLine(), out DateTime FechaNacimiento)
                     && FechaNacimiento <= DateTime.Today)
@@ -51,30 +51,44 @@ namespace GestionTurnos.Modelos
                     Console.WriteLine("Fecha inválida. Intente nuevamente.");
                 }
             }
+            while (true) 
+            { 
+                Console.WriteLine($"Ingrese el telefono del paciente");
+                if (int.TryParse(Console.ReadLine(), out int telefono) && telefono > 0)
+                {
+                paciente.Telefono = telefono;
+                break;
+                }
+                else
+                {
+                Console.WriteLine("Teléfono inválido. Ingrese un número positivo.");
+                }
+            }
 
-            Console.WriteLine($"Ingrese el telefono del paciente");
-            paciente.Telefono = int.Parse( Console.ReadLine());
             Console.WriteLine($"Ingrese el tipo del cobertura del paciente");
             Console.WriteLine("1 - Particular");
             Console.WriteLine("2 - Obra social");
-            int opcion = int.Parse(Console.ReadLine());
-            if (opcion == 1)
+            string opcion = Console.ReadLine();
+            if (opcion == "1")
             {
                 paciente.TipoCobertura = "Particular";
+                paciente.Cobertura = new Particular();
+                
             }
-            else if (opcion == 2)
+            else if (opcion == "2")
             {
                 paciente.TipoCobertura = "Obra social";
+                paciente.Cobertura = new ObraSocial();
             }
             else
             {
                 Console.WriteLine("Opción inválida ingrese 1 o 2");
                 
             }
+            Console.WriteLine("\nPaciente cargado correctamente.");
+            Pacientes.Add(paciente);
 
-            Console.WriteLine($"1- {paciente.TipoCobertura}");
-            paciente.TipoCobertura = Console.ReadLine();
-            
+
         }
 
     }
