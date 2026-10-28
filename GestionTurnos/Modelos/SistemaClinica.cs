@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.Text.Json;
+using System.Net.Http;
+using System.Runtime.InteropServices;
 
 namespace GestionTurnos.Modelos
 {
     internal class SistemaClinica
     {
-        public List <Paciente> Pacientes { get; set; } = new List<Paciente>();
-        public List <Profesional> Profesionales { get; set; } = new List<Profesional>();
-        
+        public List<Paciente> Pacientes { get; set; } = new List<Paciente>();
+        public List<Profesional> Profesionales { get; set; } = new List<Profesional>();
+        public List<Turno> Turnos { get; set; } = new List<Turno>();
+
 
         public void RegistrarPaciente(Paciente paciente)
         {
@@ -53,17 +58,17 @@ namespace GestionTurnos.Modelos
                     Console.WriteLine("Fecha inválida. Intente nuevamente.");
                 }
             }
-            while (true) 
-            { 
+            while (true)
+            {
                 Console.WriteLine($"Ingrese el telefono del paciente");
                 if (int.TryParse(Console.ReadLine(), out int telefono) && telefono > 0)
                 {
-                paciente.Telefono = telefono;
-                break;
+                    paciente.Telefono = telefono;
+                    break;
                 }
                 else
                 {
-                Console.WriteLine("Teléfono inválido. Ingrese un número positivo.");
+                    Console.WriteLine("Teléfono inválido. Ingrese un número positivo.");
                 }
             }
 
@@ -75,7 +80,7 @@ namespace GestionTurnos.Modelos
             {
                 paciente.TipoCobertura = "Particular";
                 paciente.Cobertura = new Particular();
-                
+
             }
             else if (opcion == "2")
             {
@@ -85,7 +90,7 @@ namespace GestionTurnos.Modelos
             else
             {
                 Console.WriteLine("Opción inválida ingrese 1 o 2");
-                
+
             }
             Console.WriteLine("\nPaciente cargado correctamente.");
             Pacientes.Add(paciente);
@@ -106,18 +111,19 @@ namespace GestionTurnos.Modelos
                 Console.WriteLine($"Nombre: {paciente.Nombre} {paciente.Apellido}, Fecha de Nacimiento: {paciente.FechaNacimiento.ToShortDateString()}, Teléfono: {paciente.Telefono}, Tipo de Cobertura: {paciente.TipoCobertura}");
             }
         }
-        
+
         public void BuscarPaciente(string nombre, string apellido)
         {
             var paciente = Pacientes.FirstOrDefault(p =>
             p.Nombre.ToUpper() == nombre.ToUpper() &&
             p.Apellido.ToUpper() == apellido.ToUpper());
-          
+
             if (paciente != null)
             {
                 Console.WriteLine($"Nombre: {paciente.Nombre} {paciente.Apellido}, Fecha de Nacimiento: {paciente.FechaNacimiento.ToShortDateString()}, Teléfono: {paciente.Telefono}, Tipo de Cobertura: {paciente.TipoCobertura}");
                 Console.WriteLine("Historial de turnos:");
-                foreach (var turno in paciente.Turnos)
+                //Estudiar
+                foreach (Turno turno in Turnos.Where(t => t.Paciente == paciente))
                 {
                     Console.WriteLine($"Fecha: {turno.Fecha.ToShortDateString()}, Profesional: {turno.Profesional.Nombre} {turno.Profesional.Apellido}, Especialidad: {turno.Profesional.Especialidad}, Estado: {turno.Estado}");
                 }
@@ -161,14 +167,14 @@ namespace GestionTurnos.Modelos
             }
             Profesionales.Add(profesional);
             Console.WriteLine("\nProfesional cargado correctamente.");
-    }
-     public void MostrarProfesionales(string especialidad = null)
+        }
+        public void MostrarProfesionales(string especialidad = null)
         {
             var profesionalesFiltrados = Profesionales;
 
             if (!string.IsNullOrEmpty(especialidad))
             {
-                profesionalesFiltrados = Profesionales.Where(p => p.Especialidad.ToString().Equals(especialidad, StringComparison.OrdinalIgnoreCase)).ToList();
+                profesionalesFiltrados = Profesionales.Where(p => p.especialidad.ToString().Equals(especialidad, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
             if (profesionalesFiltrados.Count == 0)
@@ -180,9 +186,17 @@ namespace GestionTurnos.Modelos
             Console.WriteLine("-----LISTA DE PROFESIONALES-----");
             foreach (var profesional in profesionalesFiltrados)
             {
-                Console.WriteLine($"Matrícula: {profesional.Matricula}, Nombre: {profesional.Nombre} {profesional.Apellido}, Especialidad: {profesional.Especialidad}, Valor de Consulta: {profesional.ValorConsulta}, Días de Atención: {string.Join(", ", profesional.DiasAtencion)}");
+                Console.WriteLine($"Matrícula: {profesional.Matricula}, Nombre: {profesional.Nombre} {profesional.Apellido}, Especialidad: {profesional.especialidad}, Valor de Consulta: {profesional.ValorConsulta}");
+                Console.WriteLine("Horarios de atencion:");
+                  foreach (var horario in profesional.Horarios)
+                  {
+                    Console.WriteLine($" {horario.Dia}: {horario.HoraInicio:hh\\:mm} a {horario.HoraFin:hh\\:mm}");
+
+                  }
             }
         }
+    
+
   
   
    public void VerAgendaProfesional(string matricula, DateTime fecha)
@@ -218,7 +232,7 @@ La fecha no puede ser anterior a la fecha actual.
 El día no puede ser feriado ni día no laborable (se verifica consultando una API de feriados de Argentina).
 El profesional debe atender ese día de la semana.
 El horario debe estar libre (no puede haber dos turnos del mismo profesional a la misma hora). Qué muestra: Comprobante del turno con número, paciente, profesional, especialidad, fecha, horario y costo estimado de la consulta según la cobertura del paciente. Persistencia: Se guarda en el archivo JSON de turnos.*/
-       public void SacarTurno(string dniPaciente, string matriculaProfesional, DateTime fechaHora)
+       public async Task SacarTurno(string dniPaciente, string matriculaProfesional, DateTime fechaHora)
         {
             var paciente = Pacientes.FirstOrDefault(p => p.Dni == dniPaciente);
             if (paciente == null)
@@ -241,19 +255,27 @@ El horario debe estar libre (no puede haber dos turnos del mismo profesional a l
             }
 
             // Aquí se debería agregar la validación de feriados y días no laborables consultando la API correspondiente.
-
-            HttpClient cliente = new HttpClient();
+            Feriado feriado = null;
+            try
+            {
+              HttpClient cliente = new HttpClient();
             // Se realiza la solicitud a la API de feriados de Argentina para el año 2026
-            string respuesta = await cliente.GetStringAsync("https://api.argentinadatos.com/v1/feriados/2026");
-            List<Feriado> feriados = JsonSerializer.Deserialize<List<Feriado>>(respuesta);
-            string fechaCita = fechaHora.ToString("yyyy-MM-dd");
-            Feriado feriado = feriados.FirstOrDefault(f => f.fecha == fechaCita);
+              string respuesta = await cliente.GetStringAsync("https://api.argentinadatos.com/v1/feriados/2026");
+              List<Feriado> feriados = JsonSerializer.Deserialize<List<Feriado>>(respuesta);
+              string fechaCita = fechaHora.ToString("yyyy-MM-dd");
+              feriado  = feriados.FirstOrDefault(f => f.fecha == fechaCita);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al consultar la API de feriados: " + ex.Message);
+                return;
+            }
 
             if (feriado != null)
-           {
+            {
                Console.WriteLine("No se puede sacar turno porque es feriado: " + feriado.nombre);
                return;
-           }
+            }
 
             var turnoExistente = profesional.Turnos.FirstOrDefault(t => t.Fecha == fechaHora);
             if (turnoExistente != null)

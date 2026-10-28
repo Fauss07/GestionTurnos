@@ -13,10 +13,10 @@ namespace GestionTurnos.Modelos
         public string Apellido { get; set; } 
         public int DNI { get; set; }
         public DateTime FechaNacimiento { get; set; }
-        public int Telefono { get; set; }
+        public long Telefono { get; set; }
         public string TipoCobertura { get; set; }
         public string mail { get; set; }
-        public Persona(string nom,string ape, int dni, DateTime fechaNacimiento, int telefono, string tipoCobertura, string mail)
+        public Persona(string nom,string ape, int dni, DateTime fechaNacimiento, long telefono, string tipoCobertura, string mail)
         {
             this.Nombre = nom;
             this.Apellido = ape;

@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace GestionTurnos.Enum
 {
-    public enum EstadoTurnos
+    enum EstadoTurno
     {
         Pendiente,
-        Atendido, 
-        Cancelado, 
+        Atendido,
+        Cancelado,
         Ausente
     }
 }

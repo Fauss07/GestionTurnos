@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace GestionTurnos.Modelos
 {
-    internal class Turnos
+    internal class Feriado
     {
+        public string fecha { get; set; }
+        public string nombre { get; set; }
     }
 }
