@@ -10,6 +10,8 @@ namespace GestionTurnos.Enum
     {
         Clínica, 
         Pediatría, 
-        Traumatología
+        Traumatología,
+        hola
+        
     }
 }
