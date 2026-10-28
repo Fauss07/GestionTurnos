@@ -162,6 +162,130 @@ namespace GestionTurnos.Modelos
             Profesionales.Add(profesional);
             Console.WriteLine("\nProfesional cargado correctamente.");
     }
-  }
+     public void MostrarProfesionales(string especialidad = null)
+        {
+            var profesionalesFiltrados = Profesionales;
+
+            if (!string.IsNullOrEmpty(especialidad))
+            {
+                profesionalesFiltrados = Profesionales.Where(p => p.Especialidad.ToString().Equals(especialidad, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            if (profesionalesFiltrados.Count == 0)
+            {
+                Console.WriteLine("No hay profesionales registrados con la especialidad especificada.");
+                return;
+            }
+
+            Console.WriteLine("-----LISTA DE PROFESIONALES-----");
+            foreach (var profesional in profesionalesFiltrados)
+            {
+                Console.WriteLine($"Matrícula: {profesional.Matricula}, Nombre: {profesional.Nombre} {profesional.Apellido}, Especialidad: {profesional.Especialidad}, Valor de Consulta: {profesional.ValorConsulta}, Días de Atención: {string.Join(", ", profesional.DiasAtencion)}");
+            }
+        }
+  
+  
+   public void VerAgendaProfesional(string matricula, DateTime fecha)
+        {
+            var profesional = Profesionales.FirstOrDefault(p => p.Matricula == matricula);
+            if (profesional == null)
+            {
+                Console.WriteLine("Profesional no encontrado.");
+                return;
+            }
+
+            Console.WriteLine($"-----AGENDA DEL PROFESIONAL {profesional.Nombre} {profesional.Apellido} PARA EL DÍA {fecha.ToShortDateString()}-----");
+            var turnosDelDia = profesional.Turnos.Where(t => t.Fecha.Date == fecha.Date).ToList();
+
+            if (turnosDelDia.Count == 0)
+            {
+                Console.WriteLine("No hay turnos programados para este día.");
+                return;
+            }
+
+            foreach (var turno in turnosDelDia)
+            {
+                string estadoTurno = turno.Estado.ToString();
+                string nombrePaciente = turno.Paciente != null ? $"{turno.Paciente.Nombre} {turno.Paciente.Apellido}" : "Libre";
+                Console.WriteLine($"Hora: {turno.Fecha.ToShortTimeString()}, Estado: {estadoTurno}, Paciente: {nombrePaciente}");
+            }
+        }
+        /*7. Sacar turno
+Qué hace: Asigna un turno a un paciente con un profesional en una fecha y horario. Datos que pide: DNI del paciente, matrícula del profesional (o especialidad, para que el sistema muestre quiénes atienden esa especialidad), fecha y horario. Validaciones:
+
+El paciente y el profesional deben existir.
+La fecha no puede ser anterior a la fecha actual.
+El día no puede ser feriado ni día no laborable (se verifica consultando una API de feriados de Argentina).
+El profesional debe atender ese día de la semana.
+El horario debe estar libre (no puede haber dos turnos del mismo profesional a la misma hora). Qué muestra: Comprobante del turno con número, paciente, profesional, especialidad, fecha, horario y costo estimado de la consulta según la cobertura del paciente. Persistencia: Se guarda en el archivo JSON de turnos.*/
+       public void SacarTurno(string dniPaciente, string matriculaProfesional, DateTime fechaHora)
+        {
+            var paciente = Pacientes.FirstOrDefault(p => p.Dni == dniPaciente);
+            if (paciente == null)
+            {
+                Console.WriteLine("Paciente no encontrado.");
+                return;
+            }
+
+            var profesional = Profesionales.FirstOrDefault(p => p.Matricula == matriculaProfesional);
+            if (profesional == null)
+            {
+                Console.WriteLine("Profesional no encontrado.");
+                return;
+            }
+
+            if (fechaHora < DateTime.Now)
+            {
+                Console.WriteLine("La fecha y hora del turno no puede ser anterior a la fecha actual.");
+                return;
+            }
+
+            // Aquí se debería agregar la validación de feriados y días no laborables consultando la API correspondiente.
+
+            HttpClient cliente = new HttpClient();
+            // Se realiza la solicitud a la API de feriados de Argentina para el año 2026
+            string respuesta = await cliente.GetStringAsync("https://api.argentinadatos.com/v1/feriados/2026");
+            List<Feriado> feriados = JsonSerializer.Deserialize<List<Feriado>>(respuesta);
+            string fechaCita = fechaHora.ToString("yyyy-MM-dd");
+            Feriado feriado = feriados.FirstOrDefault(f => f.fecha == fechaCita);
+
+            if (feriado != null)
+           {
+               Console.WriteLine("No se puede sacar turno porque es feriado: " + feriado.nombre);
+               return;
+           }
+
+            var turnoExistente = profesional.Turnos.FirstOrDefault(t => t.Fecha == fechaHora);
+            if (turnoExistente != null)
+            {
+                Console.WriteLine("El horario seleccionado ya está ocupado por otro turno.");
+                return;
+            }
+
+            var nuevoTurno = new Turno
+            {
+                Paciente = paciente,
+                Profesional = profesional,
+                Fecha = fechaHora,
+                Estado = EstadoTurno.Pendiente
+            };
+
+            profesional.Turnos.Add(nuevoTurno);
+            paciente.Turnos.Add(nuevoTurno);
+
+            decimal costoConsulta = paciente.Cobertura.CalcularCosto(profesional.ValorConsulta);
+            
+            Console.WriteLine("-----COMPROBANTE DE TURNO-----");
+            Console.WriteLine($"Número de Turno: {nuevoTurno.Id}");
+            Console.WriteLine($"Paciente: {paciente.Nombre} {paciente.Apellido}");
+            Console.WriteLine($"Profesional: {profesional.Nombre} {profesional.Apellido}");
+            Console.WriteLine($"Especialidad: {profesional.Especialidad}");
+            Console.WriteLine($"Fecha y Hora: {fechaHora}");
+            Console.WriteLine($"Costo Estimado de la Consulta: ${costoConsulta}");
+        }
+
 }
+}
+
+
 
