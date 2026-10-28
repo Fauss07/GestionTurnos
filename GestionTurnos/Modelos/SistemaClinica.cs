@@ -9,6 +9,8 @@ namespace GestionTurnos.Modelos
     internal class SistemaClinica
     {
         public List <Paciente> Pacientes { get; set; } = new List<Paciente>();
+        public List <Profesional> Profesionales { get; set; } = new List<Profesional>();
+        
 
         public void RegistrarPaciente(Paciente paciente)
         {
@@ -90,6 +92,76 @@ namespace GestionTurnos.Modelos
 
 
         }
+        public void MostrarPacientes()
+        {
+            if (Pacientes.Count == 0)
+            {
+                Console.WriteLine("No hay pacientes registrados.");
+                return;
+            }
 
+            Console.WriteLine("-----LISTA DE PACIENTES-----");
+            foreach (var paciente in Pacientes)
+            {
+                Console.WriteLine($"Nombre: {paciente.Nombre} {paciente.Apellido}, Fecha de Nacimiento: {paciente.FechaNacimiento.ToShortDateString()}, Teléfono: {paciente.Telefono}, Tipo de Cobertura: {paciente.TipoCobertura}");
+            }
+        }
+        
+        public void BuscarPaciente(string nombre, string apellido)
+        {
+            var paciente = Pacientes.FirstOrDefault(p =>
+            p.Nombre.ToUpper() == nombre.ToUpper() &&
+            p.Apellido.ToUpper() == apellido.ToUpper());
+          
+            if (paciente != null)
+            {
+                Console.WriteLine($"Nombre: {paciente.Nombre} {paciente.Apellido}, Fecha de Nacimiento: {paciente.FechaNacimiento.ToShortDateString()}, Teléfono: {paciente.Telefono}, Tipo de Cobertura: {paciente.TipoCobertura}");
+                Console.WriteLine("Historial de turnos:");
+                foreach (var turno in paciente.Turnos)
+                {
+                    Console.WriteLine($"Fecha: {turno.Fecha.ToShortDateString()}, Profesional: {turno.Profesional.Nombre} {turno.Profesional.Apellido}, Especialidad: {turno.Profesional.Especialidad}, Estado: {turno.Estado}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Paciente no encontrado.");
+            }
+        }
+        public void RegistrarProfesional(Profesional profesional)
+        {
+            if (profesional == null)
+            {
+                Console.WriteLine("Error: el profesional no puede ser nulo.");
+                return;
+            }
+            Console.WriteLine("-----REGISTRO DE PROFESIONAL-----");
+
+            Console.WriteLine($"Ingrese la matrícula del profesional");
+            profesional.Matricula = Console.ReadLine();
+            while (profesional.Matricula == "")
+            {
+                Console.WriteLine("La matrícula no puede estar vacía. Intente nuevamente:");
+                profesional.Matricula = Console.ReadLine();
+            }
+
+            Console.WriteLine($"Ingrese el nombre del profesional");
+            profesional.Nombre = Console.ReadLine();
+            while (profesional.Nombre == "")
+            {
+                Console.WriteLine("El nombre no puede estar vacío. Intente nuevamente:");
+                profesional.Nombre = Console.ReadLine();
+            }
+
+            Console.WriteLine($"Ingrese el apellido del profesional");
+            profesional.Apellido = Console.ReadLine();
+            while (profesional.Apellido == "")
+            {
+                Console.WriteLine("El apellido no puede estar vacío. Intente nuevamente:");
+                profesional.Apellido = Console.ReadLine();
+            }
+            Profesionales.Add(profesional);
+            Console.WriteLine("\nProfesional cargado correctamente.");
     }
+  }
 }
+

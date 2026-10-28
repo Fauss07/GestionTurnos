@@ -9,12 +9,7 @@ namespace GestionTurnos.Modelos
 {
     internal class Paciente : Persona
     {
-        bool valido = false;
-        public int DNI { get; set; }
-        public DateTime FechaNacimiento { get; set; }
-        public int Telefono { get; set; }
-        public string TipoCobertura { get; set; }
-        public string mail { get; set; }
+        
         public ICobertura Cobertura { get; set; }
 
 

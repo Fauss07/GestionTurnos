@@ -11,7 +11,10 @@ namespace GestionTurnos.Enum
         Clínica, 
         Pediatría, 
         Traumatología,
-        hola
-        
+        Cardiología,
+        Dermatología,
+        Ginecología,
+        Neurología,
+        Oftalmología,
     }
 }
