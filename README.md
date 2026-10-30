@@ -154,7 +154,7 @@ classDiagram
 
 ## 👤 Autor
 
-Proyecto desarrollado por **TU NOMBRE** como parte de la tecnicatura.
+Proyecto desarrollado  como parte de la tecnicatura.
 
 [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/TU_USUARIO)
 
